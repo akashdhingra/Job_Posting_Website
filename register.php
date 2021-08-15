@@ -1,19 +1,21 @@
 <?php
 
 require_once "config.php";
-
-$username = $password = $confirm_password = "";
+// $FirstName 
+$username = $password = $confirm_password = $FirstName = $LastName = $EmailID = $phonenumber = $statdate = $accountstatus = "";
+$balance = 0;
 $username_err = $password_err = $confirm_password_err = "";
 
 if($_SERVER['REQUEST_METHOD'] == "POST")
 {
     // check if username is empty
-    if(empty(trim($_POST["username"])))
+    if(empty(trim($_POST['username'])))
     {
         $username_err = "Username cannot be blank";
+        echo $username_err;
     }
     else{
-        $sql = "SELECT id FROM users WHERE username = ?";
+        $sql = "SELECT userID FROM User WHERE userID = ?";
         $stmt = mysqli_prepare($conn,$sql); // preparing the sql command
         if($stmt)
         {
@@ -29,66 +31,101 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
                     $username_err = "This username already exists";  // if exist then show error
                 }
                 else{
+                   if(isset($_POST['radio']))
+                    {  //  Displaying Selected Value
+                          if($_POST['radio'] == "Basic")
+                            $balance = 0;
+                          elseif($_POST['radio'] == "Prime")
+                            $balance = 10;
+                          else
+                            $balance = 20;
+                      }
+                    else
+                      {
+                        echo "please select any option";
+                      }
+        
                     $username = trim($_POST['username']);  // if name does not exist already then store it
-                }
-
+                    $FirstName = $_POST['FirstName'];
+                    $LastName = $_POST['LastName']; 
+                    $EmailID = $_POST['EmailID']; 
+                    $phonenumber = $_POST['phonenumber'];
+                    $statdate = date('Y-m-d');
+                    $accountstatus = "Activated";
+                    
+                  }
             }
+
             else{
+                echo "Error: " . $sql . "<br>" . $conn->error;
                 echo "Something went wrong";  // if statement does not executes then show error
-            }
+                }
+        
         }
-    }
+        mysqli_stmt_close($stmt);
+        }
 
-    mysqli_stmt_close($stmt);
+    
 
 // check for password
 
-if(empty(trim($_POST['password'])))
-{
-    $password_err = "Password cannot be blank";
-}
+  if(empty(trim($_POST['password'])))
+  {
+      $password_err = "Password cannot be blank";
+  }
 
-elseif(strlen(trim($_POST['password']))<5)
-{
-    $password_err = "Password cannot be less than 5 characters";
-}
+  elseif(strlen(trim($_POST['password']))<5)
+  {
+      $password_err = "Password cannot be less than 5 characters";
+  }
 
-else{
-    $password = trim($_POST['password']);
-}
+  else{
+      $password = trim($_POST['password']);
+  }
 
-// check for confirmed password field
+  // check for confirmed password field
 
-if(trim($_POST['password'])!= trim($_POST['confirm_password']))
-{
-    $password_err = "passwords should match";
-}
+  if(trim($_POST['password'])!= trim($_POST['confirm_password']))
+  {
+      $password_err = "passwords should match";
+  }
 
-// if no error then insert data into database
+  // if no error then insert data into database
 
-if(empty($username_err) && empty($password_err) && empty($confirm_password_err))
-{
-    $sql = "INSERT INTO users (username, password) VALUES (?,?)";
-    $stmt = mysqli_prepare($conn,$sql);
-    if($stmt)
+  if(empty($username_err) && empty($password_err) && empty($confirm_password_err))
     {
-        mysqli_stmt_bind_param($stmt,"ss",$param_username,$param_password);
+      $sql = "INSERT INTO User (userID, password, firstName, lastName, accountStatus, balance, statChangeDate, email, phoneNumber) VALUES (?,?,?,?,?,?,?,?,?)";
+      $stmt = mysqli_prepare($conn,$sql);
+      if($stmt)
+      {
+          mysqli_stmt_bind_param($stmt,"sssssisss",$param_username,$param_password, $param_firstname, $param_lastname, $param_accountstatus, $param_balance, $param_statdate, $param_email, $param_phonenumber);
 
-        $param_username = $username;
-        $param_password = password_hash($password,PASSWORD_DEFAULT);
+          $param_username = $username;
+          $param_password = $password;
+          //$param_password = password_hash($password,PASSWORD_DEFAULT);
+          $param_firstname = $FirstName;
+          $param_lastname = $LastName;
+          $param_accountstatus= $accountstatus;
+          $param_balance = $balance; 
+          $param_statdate = $statdate;
+          $param_email = $EmailID;
+          $param_phonenumber = $phonenumber;
 
-        if(mysqli_stmt_execute($stmt))
-        {
-            header("location: login.php");
-        }
-        else{
-            echo "Something went wrong. Cannot redirect!";
-        }
-    }
-    mysqli_stmt_close($stmt);
+          if(mysqli_stmt_execute($stmt))
+          {
+            echo "information entered";
+            header("location: welcome.php");
+          }
+          else{
+              echo "Error: " . $sql . "<br>" . $conn->error;
+              echo "Something went wrong. Cannot redirect!";
+          }        
+      }
+      mysqli_stmt_close($stmt); 
 
-} 
-mysqli_close($conn);
+    } 
+    mysqli_close($conn);
+
 }
 ?>
 
@@ -133,7 +170,7 @@ mysqli_close($conn);
 <hr>
 <form action="" method="POST">
   <div class="col-md-6">
-    <label for="inputEmail4" class="form-label">Username</label>
+    <label for="inputEmail4" class="form-label">UserID</label>
     <input type="text" class="form-control" name="username" placeholder="user name">
   </div>
   <div class="col-md-6">
@@ -145,37 +182,29 @@ mysqli_close($conn);
     <input type="password" class="form-control" name="confirm_password" placeholder="confirm password">
   </div>
   <div class="col-md-6">
-    <label for="inputAddress2" class="form-label">Address   </label>
-    <input type="text" class="form-control" id="inputAddress2" placeholder="Apartment, studio, or floor">
+    <label for="inputFirstName" class="form-label">First Name   </label>
+    <input type="text" class="form-control" name="FirstName">
   </div>
   <div class="col-md-6">
-    <label for="inputCity" class="form-label">City</label>
-    <input type="text" class="form-control" id="inputCity">
+    <label for="inputLastName" class="form-label">Last Name</label>
+    <input type="text" class="form-control" name="LastName">
   </div>
-  <div class="col-md-4">
-    <label for="inputState" class="form-label">State</label>
-    <select id="inputState" class="form-select">
-      <option selected>Choose...</option>
-      <option>...</option>
-    </select>
+  <div class="col-md-6">
+    <label for="inputEmailID" class="form-label">Email ID</label>
+    <input type="text" class="form-control" name="EmailID">
   </div>
-  <div class="col-md-2">
-    <label for="inputZip" class="form-label">Zip</label>
-    <input type="text" class="form-control" id="inputZip">
+  <div class="col-md-6">
+    <label for="inputPhoneNumber" class="form-label">Phone Number</label>
+    <input type="text" class="form-control" name="phonenumber">
   </div>
-  <div class="col-12">
-    <div class="form-check">
-      <input class="form-check-input" type="checkbox" id="gridCheck">
-      <label class="form-check-label" for="gridCheck">
-        Check me out
-      </label>
-    </div>
-  </div>
-  <div class="col-12">
-    <button type="submit" class="btn btn-primary">Sign in</button>
-  </div>
-</form>
-</div>
+  <div class="form-check">
+    <input type="radio" name="radio" value="Basic">Basic [Free]
+    <input type="radio" name="radio" value="Prime">Prime [Charges = 10$]
+    <input type="radio" name="radio" value="Gold">Gold [Charges = 20$]
+    <br>
+    <button type="submit" value="Result" name="Result" class="btn btn-primary">Submit</button>
+  <div>
+  
 
     <!-- Optional JavaScript; choose one of the two! -->
 

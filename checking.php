@@ -1,14 +1,13 @@
 <?php
+require_once "config.php";
 
-define ('DB_SERVER','ajc5531.encs.concordia.ca');
-define ('DB_USERNAME','ajc55311');
-define ('DB_PASSWORD','5531ajkr');
-define ('DB_NAME','ajc55311');
+$sql = "INSERT INTO User (userID, password, firstName, lastName, accountStatus, balance, statChangeDate, email, phoneNumber) VALUES ('akash123','testing','akash','dhingra','Active',10,'2018-09-21','akash40162788@gmail.com','789456789456')";
 
-$conn = mysqli_connect(DB_SERVER,DB_USERNAME,DB_PASSWORD,DB_NAME);
+if ($conn->query($sql) === TRUE) {
+  echo "New record created successfully";
+} else {
+  echo "Error: " . $sql . "<br>" . $conn->error;
+}
 
-if($conn == false)
-{
-    dir("Error : cannot connect");
-}   
+$conn->close();
 ?>

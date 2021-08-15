@@ -1,7 +1,9 @@
+signout
 <?php
+ unset($_SESSION['logged_in']);
 session_start();
 session_destroy();
-// Redirect to the login page:
-//header('Location: index.html');
-echo 'logged out';
+header('Location: login.php');
+header("Cache-Control", "no-store, no-cache, must-revalidate");
+exit;
 ?>

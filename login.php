@@ -2,60 +2,75 @@
 
 session_start();
 
-if(!isset($_SESSION['username']))
-{
-    // header("location: welcome.php");
-    exit;
-}
+// if(!isset($_SESSION['logged_in'])) : 
+//   header("Location: login.php");  
+
+// if(isset($_SESSION['userID']))
+// {
+//     if(time()-$_SESSION["login_time_stamp"] >10) 
+//     {
+//         session_unset();
+//         session_destroy();
+//         header("Location:login.php");
+//     }
+// }
+// else
+// {
+//     header("Location:welcome.php");
+//     exit;
+// }
 
 require_once "config.php";
-$username = $password = "";
-$err = "";
-
+$userID = $password = $radio = "";
 if($_SERVER['REQUEST_METHOD'] == "POST")
 {
-    if(empty(trim($_POST['username'])) || empty(trim($_POST['password'])))
+    if(empty(trim($_POST['userID'])) || empty(trim($_POST['password'])))
     {
-        $err = "Please enter username and password";
+        $err = "Please enter userID and password";
         echo $err;
     }
     else{
-        $username = trim($_POST['username']);
+        $userID = trim($_POST['userID']);
         $password = trim($_POST['password']);
     }
 
 if(empty($err))
 {
-    $sql = "SELECT id, username, password FROM users WHERE username = ? ";
+    $sql = "SELECT userID, password FROM User WHERE userID = ? ";
     $stmt = mysqli_prepare($conn,$sql);
     mysqli_stmt_bind_param($stmt,"s",$param_username);
-    $param_username = $username;
+    $param_username = $userID;
 
     if(mysqli_stmt_execute($stmt))
     {
         mysqli_stmt_store_result($stmt);
         if(mysqli_stmt_num_rows($stmt)==1)
         {
-            mysqli_stmt_bind_result($stmt,$id,$username, $hashed_password);
+            mysqli_stmt_bind_result($stmt,$userID,$password);
             if(mysqli_stmt_fetch($stmt))
             {
-                if(password_verify($password,$hashed_password))
-                {
+                // if(password_verify($password,$hashed_password))
+                // {
                     //password is correct so allow user to login
-                    session_start();
-                    $_SESSION["username"] = $username;
-                    $_SESSION["id"] = $id;
+                    //session_start();
+                    $_SESSION["userID"] = $userID;
                     $_SESSION["loggedin"] = true;
-                    // if (isset($_POST['jobseeker'])) {
-                    //     header('location: Portal_pages/JobSeeker.php'); // redirect to your desired page
-                    // }
-                    // else{
-                    //     header('location: welcome.php');
-                    // }
-                    
+                    //$radio = $_POST["my_radio"];
+                      if(isset($_POST['radio']))
+                        {  //  Displaying Selected Value
+                            if($_POST['radio'] == "JobSeeker")
+                              header('location: Portal_pages/JobSeeker.php');
+                            elseif($_POST['radio'] == "Employer")
+                              header('location: Portal_pages/Employee.php');
+                            else
+                              header('location: Portal_pages/Admin.php');
+                        }
+                      
+                      else
+                      {
+                        echo "please select any option";
+                      }
 
-                    
-                }
             }
         }
     }
@@ -64,6 +79,9 @@ if(empty($err))
 }
 
 ?>
+
+
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -107,7 +125,7 @@ if(empty($err))
 <form action = "" method="POST">
   <div class="form-group">
     <label for="exampleInputEmail1">Username</label>
-    <input type="text" name = 'username' class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter username">
+    <input type="text" name = 'userID' class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter username">
     <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
   </div>
   <div class="form-group">
@@ -115,18 +133,20 @@ if(empty($err))
     <input type="password" name = 'password' class="form-control" id="exampleInputPassword1" placeholder="Enter Password">
   </div>
   <div class="form-check">
-    <input type="checkbox" class="form-check-input" id="exampleCheck1">
-    <label class="form-check-label" name = "job_seeker" value = "yes" for="exampleCheck1">Job Seeker</label>
+    <input type="radio" name="radio" value="JobSeeker">JobSeeker
+    <input type="radio" name="radio" value="Employer">Employer
+    <input type="radio" name="radio" value="Admin">Admin
+    <button type="submit" value="Result" name="Result" class="btn btn-primary">Login</button>
+  <div>
+    
+    <a href="recover_password.php" class ="float-end">forget your password?</a>
+
   </div>
-  <div class="form-check">
-    <input type="checkbox" class="form-check-input" id="exampleCheck2">
-    <label class="form-check-label" name = "employee" for="exampleCheck2">Employee</label>
-  </div>
-  <button type="submit" class="btn btn-primary">Submit</button>
-  <button type="submit" class="btn btn-primary" formaction="Portal_pages/JobSeeker.php" >JobSeeker</button>
+  
+  <!-- <button type="submit" class="btn btn-primary" formaction="Portal_pages/JobSeeker.php" >JobSeeker</button>
   <button type="submit" class="btn btn-primary" formaction="Portal_pages/Employee.php" >Employee</button>
   <button type="submit" class="btn btn-primary" formaction="Portal_pages/Admin.php" >Admin</button>
-</form>
+</form> -->
 
 
 </div>

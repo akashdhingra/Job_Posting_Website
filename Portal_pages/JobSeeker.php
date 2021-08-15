@@ -1,16 +1,33 @@
 <?php
-
+session_start();
 require_once "../config.php";
+$userID = $_SESSION["userID"];
+//require_once "../checking.php";
 
-$sql = "SELECT * FROM job";	
+$sql = "SELECT * FROM Job";	
+//$sql = "SELECT * FROM Admin";	
 
 $result = mysqli_query($conn,$sql);
 
-$users = mysqli_fetch_all($result, MYSQLI_ASSOC);
+$jobs = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
 mysqli_free_result($result);
 
 mysqli_close($conn);
+
+
+if($_SERVER['REQUEST_METHOD'] == "POST")
+{
+    // check if username is empty
+    if($_POST['apply'])
+    {
+       header("location: jobapplied.php");
+    }
+    else
+    {
+      echo "please apply for any job";
+    }
+}
 ?>
 
 <!doctype html>
@@ -43,6 +60,12 @@ mysqli_close($conn);
         <li class="nav-item">
           <a class="nav-link" href="#">View Applications</a>
         </li>
+        <li class="nav-item">
+          <a class ="nav-link" name = "delete_account" href="../Portal_pages/delete_acount.php">Delete Account</a>
+        </li>
+        <li class="nav-item">
+          <a class ="nav-link" name = "log_out" href="../logout.php">Log out</a>
+        </li>
         
       </ul>
     </div>
@@ -65,14 +88,24 @@ mysqli_close($conn);
 
 <div>
   <h4 class = "centre grey-text">Job list</h4>
+  <form action = "" method="POST">
 	<div class = "container">
 		<div class="column">
-			<?php foreach($users as $users):?>
+			<?php foreach($jobs as $jobs):?>
 
 			<div class= "col s6 md3">
 				<div class = "card z-depth-0">
 					<div class = "mx-auto">
-						<h6> <?php echo htmlspecialchars($users['JobID']);  ?></h6>
+						<h6> <?php echo "Job ID :" .htmlspecialchars($jobs['jobID']);  ?></h6>
+            <h6> <?php echo "Job title :" . htmlspecialchars($jobs['title']);  ?></h6>
+            <h6> <?php echo "Category :" . htmlspecialchars($jobs['category']);  ?></h6>
+            <h6> <?php echo "PostDate :" . htmlspecialchars($jobs['postDate']);  ?></h6>
+            <h6> <?php echo "No of employees needed :" . htmlspecialchars($jobs['empNeed']);  ?></h6>
+            <h6> <?php echo "No of employees Applied :" . htmlspecialchars($jobs['empApplied']);  ?></h6>
+            <h6> <?php echo "Accepted Offers :" . htmlspecialchars($jobs['acceptedOffer']);  ?></h6>
+            <h6> <?php echo "Staus of Job :" . htmlspecialchars($jobs['statusOpenClose']);  ?></h6>
+            <h6> <?php echo "User ID :" . htmlspecialchars($jobs['userID']);  ?></h6>
+            <button type="submit" value="apply" name="apply" href = "jobapplied.php" class="btn btn-primary">Apply</button>
 
 					</div>
 			</div>
@@ -82,4 +115,5 @@ mysqli_close($conn);
 		
 	    </div>
     </div>
+    </form>
 </div>
