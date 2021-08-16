@@ -1,5 +1,6 @@
 <?php
 session_start();
+$id = "";
 require_once "../config.php";
 $userID = $_SESSION["userID"];
 //require_once "../checking.php";
@@ -10,6 +11,21 @@ $sql = "SELECT * FROM Job";
 $result = mysqli_query($conn,$sql);
 
 $jobs = mysqli_fetch_all($result, MYSQLI_ASSOC);
+$data = array();
+foreach($jobs as $results)
+{
+  $jsonformat['jobID'] = $results['jobID'];
+  $jsonformat['title'] = $results['title'];
+  $jsonformat['category'] = $results['category'];
+  $jsonformat['postDate'] = $results['postDate'];
+  $jsonformat['description'] = $results['description'];
+  $jsonformat['empNeed'] = $results['empNeed'];
+  $jsonformat['empApplied'] = $results['empApplied'];
+  $jsonformat['acceptedOffer'] = $results['acceptedOffer'];
+  $jsonformat['statusOpenClose'] = $results['statusOpenClose'];
+  $jsonformat['userID'] = $results['userID'];
+array_push($data,$jsonformat);
+}
 
 mysqli_free_result($result);
 
@@ -18,9 +34,15 @@ mysqli_close($conn);
 
 if($_SERVER['REQUEST_METHOD'] == "POST")
 {
+    $userid = $_POST['apply'];
+    $_SESSION['$id'] = $userid;
+   
+    
     // check if username is empty
     if($_POST['apply'])
     {
+       echo $id;
+
        header("location: jobapplied.php");
     }
     else
@@ -58,7 +80,10 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
           <a class="nav-link" href="#">Apply for a job</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">View Applications</a>
+          <a class="nav-link" href="viewAppliedJobs.php">View Applications</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="edit_details.php">Edit Details</a>
         </li>
         <li class="nav-item">
           <a class ="nav-link" name = "delete_account" href="../Portal_pages/delete_acount.php">Delete Account</a>
@@ -91,7 +116,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
   <form action = "" method="POST">
 	<div class = "container">
 		<div class="column">
-			<?php foreach($jobs as $jobs):?>
+			<?php foreach($data as $jobs):?>
 
 			<div class= "col s6 md3">
 				<div class = "card z-depth-0">
@@ -103,9 +128,9 @@ if($_SERVER['REQUEST_METHOD'] == "POST")
             <h6> <?php echo "No of employees needed :" . htmlspecialchars($jobs['empNeed']);  ?></h6>
             <h6> <?php echo "No of employees Applied :" . htmlspecialchars($jobs['empApplied']);  ?></h6>
             <h6> <?php echo "Accepted Offers :" . htmlspecialchars($jobs['acceptedOffer']);  ?></h6>
-            <h6> <?php echo "Staus of Job :" . htmlspecialchars($jobs['statusOpenClose']);  ?></h6>
+            <h6> <?php echo "Status of Job :" . htmlspecialchars($jobs['statusOpenClose']);  ?></h6>
             <h6> <?php echo "User ID :" . htmlspecialchars($jobs['userID']);  ?></h6>
-            <button type="submit" value="apply" name="apply" href = "jobapplied.php" class="btn btn-primary">Apply</button>
+            <button type="submit" value="<?php echo $jobs['jobID']; ?>" name="apply" href = "jobapplied.php" class="btn btn-primary">Apply</button>
 
 					</div>
 			</div>
